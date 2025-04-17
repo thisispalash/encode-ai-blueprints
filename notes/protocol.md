@@ -6,6 +6,44 @@ user and ocr-worker.
 
 ### Why does this exist?
 
+The goal of the project is to perform OCR on uploaded receipts, but since the user is expected 
+to upload eery receipt, this can become a dangerous profiling tool. As such, a priacy preserving 
+network is needed, where no one entity knows everything about a user, and ideally does not even 
+know the user.
+
+### Basic Overview
+
+The key pieces in this protocol feature local ipfs nodes, onchain zk identity and rate limited 
+job submissions, encrypted results, data dao and data aggregation.
+
+At a high level, the following actions enable the network,
+- Upon signing up, 
+  - Users register their membership on the central contract
+  - Users also have an option to register as a ocr-worker node
+  - Users deploy a docker container (locally or cloud) with scripts and local ipfs nodes
+- For every "uploaded" receipt,
+  - Users draw boxes around relevant text (assisted by scripts)
+  - The boxes are encrypted and added to local ipfs node
+  - CID submitted to central contract as job
+- For every job submitted to the central contract,
+  - Contract validates membership and rate limits
+  - Contract adds job to queue and emits event
+  - ocr-worker pulls job via user's ipfs node
+  - ocr-worker performs ocr and submits results to central contract
+  - Contract validates membership and emits event
+  - User's node pulls results from contract and confirms with user
+- Finally, both users and workers are subject to reputation system, and potential challenges (the 
+network is generally optimistic in nature)
+  - Workers are rated by users on speed, acuracy, adherence to public ocr module behavior, etc.
+  - Workers may be challenged on their outputs when obviously faulty (eg, garbled text)
+  - Users may be challenged on their job requests if metadata submission is inconsistent with ipfs 
+  content
+
+You can also see the diagram below for the basic data flow,
+
+![protocol-diagram](../assets/protocol-whiteboard.jpeg)
+
+<!-- 
 ## Basic flow
 1. user creates boxes somehow (either automated and then confirmed, or actual drawings)
 2. these boxes are converted to standard shapes, later step (show with dotted box)
@@ -19,13 +57,29 @@ user and ocr-worker.
 
 10. after all jobs are completed associated with the receipt, user recombines outputs and gets final ocr-ed output.. 
 11. user confirms and stores on local machine, along with original full image.. this pair will be used later to train onchain model.. but again, different process, much later..
+-->
 
-## Rate Limiting Nullifiers
+Finally, see below for more in depth information about each mechanism of the protocol.
 
-### Monetisation
+## Off Chain Containers
+> local or deployed to the cloud
 
-## FVM 
+### IPFS Nodes
+
+## On Chain Mechanisms
+
+### Anonymous membership
+
+### Rate Limits
+
+### Disputes
+
+### Aggregation
 
 ### DataDAO
 
-### Aggregation
+## Monetisation
+
+### Rate Limits
+
+### Federated Learning
